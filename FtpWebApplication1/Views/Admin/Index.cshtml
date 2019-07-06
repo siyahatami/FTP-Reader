@@ -1,0 +1,155 @@
+﻿
+
+
+<style>
+    #byte_content {
+        margin: 5px 0;
+        max-height: 100px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    #byte_range {
+        margin-top: 5px;
+    }
+
+
+    #progress_bar {
+    margin: 10px 0;
+    padding: 3px;
+    border: 1px solid #000;
+    font-size: 14px;
+    clear: both;
+    opacity: 0;
+    -moz-transition: opacity 1s linear;
+    -o-transition: opacity 1s linear;
+    -webkit-transition: opacity 1s linear;
+  }
+  #progress_bar.loading {
+    opacity: 1.0;
+  }
+  #progress_bar .percent {
+    background-color: #99ccff;
+    height: auto;
+    width: 0;
+  }
+</style>
+
+
+<h2>Admin Page</h2>   <br /><br /><br />
+
+
+    <input type="file" id="files" name="file" />
+    <button onclick="abortRead();">Cancel read</button>
+    <div id="progress_bar"><div class="percent">0%</div></div>
+
+
+    <button id="btn_Upload_Blocks">Read Blocks</button>
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+
+        
+        
+        $('#btn_Upload_Blocks').click(function () {
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                readBlob();
+            } else {
+                alert('The File APIs are not fully supported in this browser.');
+            }
+            
+        });
+
+
+
+
+        function readBlob() {
+            var file = document.getElementById('files').files[0];
+            var fileName = file.name;
+
+            var step = 1;
+            
+            requestByteToEnd(0, file.size);
+
+            function requestByteToEnd(byte, lastByte) {
+                var endByte = byte + 100000;
+                if (endByte > lastByte)
+                    endByte = lastByte;
+                
+                var _blob = file.slice(byte, endByte);
+                var myFormData = new FormData();
+                myFormData.append('file-0', _blob);
+
+                $.ajax({
+                    url: "/admin/upload?fileName="+fileName,
+                    data: myFormData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',
+                    type: 'POST', // For jQuery < 1.9
+                    success: function (data) {
+                        //console.log("step: " + step++ + " ----- " + data + " ----- endByte: " + endByte + " ----- lastByte: "+lastByte);
+                        if (endByte < lastByte)
+                            requestByteToEnd(endByte, lastByte);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("Errror");
+                    }
+                });
+
+            }//end of requestByteToEnd
+
+        }// func
+
+
+
+
+
+
+
+        function readBlob2() {
+
+            var myFormData = new FormData();
+            
+            jQuery.each(jQuery('#files')[0].files, function (i, file) {
+                myFormData.append('file-' + i, file);
+            });
+
+            
+            $.ajax({
+                url: "/admin/upload",
+                data: myFormData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                method: 'POST',
+                type: 'POST', // For jQuery < 1.9
+                success: function (data) {
+                    alert(data);
+                },
+                error: function (xhr, status, error) {
+                    alert("Errror");
+                }
+            });
+                    
+
+        }// func
+
+
+
+
+
+    </script>
